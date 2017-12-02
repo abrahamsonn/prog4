@@ -243,23 +243,38 @@ class Router:
     def update_routes(self, updated_packet, i):
         #TODO: add logic to update the routing tables and
         # possibly send out routing updates
-        print('%s: Received routing update %s from interface %d' % (self, updated_packet, i))
+        print('%s: Received routing update %s from interface %d' % (self, updated_packet.data_S, i))
         updateString = updated_packet.data_S
         indexOfString = 0
         didUpdate = False
-        for destinationColumn in self.rt_tbl_D:
-            for routerRow in self.rt_tbl_D[destinationColumn]:
-                indexOfString += 4
-                existingValue = self.rt_tbl_D[destinationColumn][routerRow]
-                incomingValue = int(updateString[indexOfString:indexOfString+2])
-                if existingValue > incomingValue:
-                    self.rt_tbl_D[destinationColumn][routerRow] = incomingValue
-                    didUpdate = True
-                indexOfString += 2
+        temp = ''
+        looping = True
+        while(looping):
+            currentDestination = updateString[indexOfString:indexOfString+2]
+            indexOfString += 2
+            currentRouter = updateString[indexOfString:indexOfString+2]
+            indexOfString += 2
+            currentCost = int(updateString[indexOfString:indexOfString+2])
+            indexOfString += 2
+            existingValue = self.rt_tbl_D[currentDestination][currentRouter]
+            if currentCost < existingValue:
+                self.rt_tbl_D[currentDestination][currentRouter] = currentCost
+                didUpdate = True
+            if indexOfString >= len(updateString):
+                looping = False
+        for neighbor in self.cost_D:
+            if neighbor[0] == 'R':
+                for destinationColumn in self.rt_tbl_D:
+                    currentCost = self.rt_tbl_D[destinationColumn][str(self)]
+                    potentialCost = self.rt_tbl_D[destinationColumn][neighbor] + self.rt_tbl_D[neighbor][str(self)]
+                    if potentialCost < currentCost:
+                        self.rt_tbl_D[destinationColumn][str(self)] = potentialCost
+                        didUpdate = True
         if didUpdate:
             for neighbor in self.cost_D:
-                for interface in self.cost_D[neighbor]:
-                    self.send_routes(interface)
+                if neighbor[0] == 'R':
+                    for interface in self.cost_D[neighbor]:
+                        self.send_routes(interface)
         
     ## P routing table
     def print_routes(self):
