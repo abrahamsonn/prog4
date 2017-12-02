@@ -1,8 +1,9 @@
-import queue
+import Queue as queue
 import threading
 
 ## An abstraction of a link between router interfaces
 class Link:
+    type = "link"
     
     ## creates a link between two objects by looking up and linking node interfaces.
     # @param node_1: node from which data will be transfered
@@ -43,6 +44,7 @@ class Link:
         
 ## An abstraction of the link layer
 class LinkLayer:
+    type = "linklayer"
     
     def __init__(self):
         ## list of links in the network

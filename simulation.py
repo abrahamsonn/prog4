@@ -53,7 +53,9 @@ if __name__ == '__main__':
     sleep(simulation_time)  #let the tables converge
     print("Converged routing tables")
     for obj in object_L:
-        if str(type(obj)) == "<class 'network.Router'>":
+        print "obj type = " + str(type(obj))
+        if obj.type == "router":
+            print "ROUTE:"
             obj.print_routes()
 
     #send packet from host 1 to host 2
@@ -66,6 +68,7 @@ if __name__ == '__main__':
         o.stop = True
     for t in thread_L:
         t.join()
+
         
     print("All simulation threads joined")
 
