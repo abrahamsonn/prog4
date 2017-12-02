@@ -70,7 +70,7 @@ class NetworkPacket:
             byte_S += '2'
         else:
             raise('%s: unknown prot_S option: %s' %(self, self.prot_S))
-        byte_S += self.data_S
+        byte_S += str(self.data_S) # fuck this language
         return byte_S
     
     ## extract a packet object from a byte string
@@ -148,7 +148,10 @@ class Router:
         #save neighbors and interfeces on which we connect to them
         self.cost_D = cost_D    # {neighbor: {interface: cost}}
         #TODO: set up the routing table for connected hosts
-        self.rt_tbl_D = {}			# {destination: {router: cost}}
+        self.rt_tbl_D = {"H1": {"RA": 99, "RB": 99},
+            "H2": {"RA": 99, "RB": 99},
+            "RA": {"RA": 99, "RB": 99},
+            "RB": {"RA": 99, "RB": 99}}			# {destination: {router: cost}}
         print('%s: Initialized routing table' % self)
         self.print_routes()
 
@@ -197,14 +200,16 @@ class Router:
     def send_routes(self, i):
         # TODO: Send out a routing table update
         #create a routing table update packet
-        p = NetworkPacket(0, 'control', 'DUMMY_ROUTING_TABLE')
-        #p = NetworkPacket(0, 'table_update', self.rt_tbl_D) # destination, protocol, data
-        try:
-            print('%s: sending routing update "%s" from interface %d' % (self, p, i))
-            self.intf_L[i].put(p.to_byte_S(), 'out', True) # why encode the table when to_byte_S does it already
-        except queue.Full:
-            print('%s: packet "%s" lost on interface %d' % (self, p, i))
-            pass
+        for vector in self.rt_tbl_D:
+            update_packet = NetworkPacket(0, 'control', vector) # destination, protocol, data
+            # how is it supposed to know if it changed or not?
+            print "updated row = " + update_packet
+            try:
+                print('%s: sending routing update "%s" from interface %d' % (self, update_packet, i))
+                self.intf_L[i].put(update_packet.to_byte_S(), 'out', True) # why encode the table when to_byte_S does it already
+            except queue.Full:
+                print('%s: packet "%s" lost on interface %d' % (self, p, i))
+                pass
 
 
     ## forward the packet according to the routing table
@@ -220,9 +225,9 @@ class Router:
         print "________________________"
         print "|" + str(self) + " | H1 | H2 | RA | RB |"
         print "|-----------------------|"
-        print "|RA |  "+str(self.rt_tbl_D["H1"]["RA"])+" |  "+str(self.rt_tbl_D["H2"]["RA"])+" |  "+str(self.rt_tbl_D["RA"]["RA"])+" |  "+str(self.rt_tbl_D["RB"]["RA"])+" |"
+        print "|RA | "+str(self.rt_tbl_D["H1"]["RA"])+" | "+str(self.rt_tbl_D["H2"]["RA"])+" | "+str(self.rt_tbl_D["RA"]["RA"])+" | "+str(self.rt_tbl_D["RB"]["RA"])+" |"
         print "|-----------------------|"
-        print "|RB |  "+str(self.rt_tbl_D["H1"]["RB"])+" |  "+str(self.rt_tbl_D["H2"]["RB"])+" |  "+str(self.rt_tbl_D["RA"]["RB"])+" |  "+str(self.rt_tbl_D["RB"]["RB"])+" |"
+        print "|RB | "+str(self.rt_tbl_D["H1"]["RB"])+" | "+str(self.rt_tbl_D["H2"]["RB"])+" | "+str(self.rt_tbl_D["RA"]["RB"])+" | "+str(self.rt_tbl_D["RB"]["RB"])+" |"
         print "------------------------"
 
     ## thread target for the host to keep forwarding data
