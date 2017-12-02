@@ -244,16 +244,6 @@ class Router:
                 didUpdate = True
             if indexOfString >= len(updateString):
                 looping = False
-        #for destinationColumn in self.rt_tbl_D:
-        #    for routerRow in self.rt_tbl_D[destinationColumn]:
-        #        indexOfString += 4
-        #        existingValue = self.rt_tbl_D[destinationColumn][routerRow]
-        #        incomingValue = int(updateString[indexOfString:indexOfString+2])
-        #        temp += str(self) + ": " + destinationColumn + " " + routerRow+' ' + str(existingValue) + " " + str(incomingValue) + '\n'
-        #        if existingValue > incomingValue:
-        #            self.rt_tbl_D[destinationColumn][routerRow] = incomingValue
-        #            didUpdate = True
-        #        indexOfString += 2
         for neighbor in self.cost_D:
             if neighbor[0] == 'R':
                 for destinationColumn in self.rt_tbl_D:
