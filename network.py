@@ -285,5 +285,4 @@ class Router:
             self.process_queues()
             if self.stop:
                 print (threading.currentThread().getName() + ': Ending')
-                self.print_routes()
                 return 
