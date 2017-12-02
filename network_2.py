@@ -278,12 +278,12 @@ class Router:
         
     ## P routing table
     def print_routes(self):
-        print "________________________\n" + \
+         print "\n________________________\n" + \
             "|" + str(self) + " | H1 | H2 | RA | RB |\n" + \
             "|-----------------------|\n" + \
-            "|RA | "+str(self.rt_tbl_D["H1"]["RA"])+" | "+str(self.rt_tbl_D["H2"]["RA"])+" | "+str(self.rt_tbl_D["RA"]["RA"])+" | "+str(self.rt_tbl_D["RB"]["RA"])+" |\n" + \
+            "|RA | "+str(self.rt_tbl_D["H1"]["RA"]).zfill(2)+" | "+str(self.rt_tbl_D["H2"]["RA"]).zfill(2)+" | "+str(self.rt_tbl_D["RA"]["RA"]).zfill(2)+" | "+str(self.rt_tbl_D["RB"]["RA"]).zfill(2)+" |\n" + \
             "|-----------------------|\n" + \
-            "|RB | "+str(self.rt_tbl_D["H1"]["RB"])+" | "+str(self.rt_tbl_D["H2"]["RB"])+" | "+str(self.rt_tbl_D["RA"]["RB"])+" | "+str(self.rt_tbl_D["RB"]["RB"])+" |\n" + \
+            "|RB | "+str(self.rt_tbl_D["H1"]["RB"]).zfill(2)+" | "+str(self.rt_tbl_D["H2"]["RB"]).zfill(2)+" | "+str(self.rt_tbl_D["RA"]["RB"]).zfill(2)+" | "+str(self.rt_tbl_D["RB"]["RB"]).zfill(2)+" |\n" + \
             "------------------------\n"
 
     ## thread target for the host to keep forwarding data
