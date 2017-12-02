@@ -154,7 +154,14 @@ class Router:
             "RB": {"RA": 99, "RB": 99}}            # {destination: {router: cost}}
         print('%s: Initialized routing table' % self)
         self.print_routes()
-
+        for neighbor in self.cost_D:
+            for interface in self.cost_D[neighbor]:
+                for destinationColumn in self.rt_tbl_D:
+                    if neighbor in self.rt_tbl_D[destinationColumn]:
+                        self.rt_tbl_D[destinationColumn][neighbor] = self.cost_D[neighbor][interface]
+        for neighbor in self.cost_D:
+            for interface in self.cost_D[neighbor]:
+                self.send_routes(interface)
 
     ## called when printing the object
     def __str__(self):
@@ -200,49 +207,51 @@ class Router:
     def send_routes(self, i):
         # TODO: Send out a routing table update
         #create a routing table update packet
-        for router in self.rt_tbl_D:
-            # what the receiving thing needs to update are its destinations, router, and costs
-            string_to_send = str(router).zfill(2) + str(self).zfill(2) + str(self.rt_tbl_D[router]).zfill(2)
-            update_packet = NetworkPacket(0, 'control', string_to_send)
-            try:
-                print('%s: sending routing update "%s" from interface %d' % (self, update_packet, i))
-                self.intf_L[i].put(update_packet.to_byte_S(), 'out', True) # why encode the table when to_byte_S does it already
-            except queue.Full:
-                print('%s: packet "%s" lost on interface %d' % (self, p, i))
-                pass
-
+        string_to_send = ''
+        for destinationColumn in self.rt_tbl_D:
+            for routerRow in self.rt_tbl_D[destinationColumn]:
+                string_to_send += ''.join([destinationColumn, routerRow, str(self.rt_tbl_D[destinationColumn][routerRow]).zfill(2)])
+        update_packet = NetworkPacket(0, 'control', string_to_send)
+        try:
+            print('%s: sending routing update from interface %d' % (self, i))
+            self.print_routes()
+            self.intf_L[i].put(update_packet.to_byte_S(), 'out', True) # why encode the table when to_byte_S does it already
+        except queue.Full:
+            print('%s: packet "%s" lost on interface %d' % (self, p, i))
+            pass
 
     ## forward the packet according to the routing table
     #  @param p Packet containing routing information
     def update_routes(self, updated_packet, i):
         #TODO: add logic to update the routing tables and
         # possibly send out routing updates
-        print('%s: Received routing update %s from interface %d' % (self, p, i))
-        updateString = p.data_S
+        print('%s: Received routing update %s from interface %d' % (self, updated_packet, i))
+        updateString = updated_packet.data_S
         indexOfString = 0
         didUpdate = False
         for destinationColumn in self.rt_tbl_D:
             for routerRow in self.rt_tbl_D[destinationColumn]:
                 indexOfString += 4
                 existingValue = self.rt_tbl_D[destinationColumn][routerRow]
-                incomingValue = int(updateString[indexOfString:indexOfString+1])
+                incomingValue = int(updateString[indexOfString:indexOfString+2])
                 if existingValue > incomingValue:
                     self.rt_tbl_D[destinationColumn][routerRow] = incomingValue
                     didUpdate = True
+                indexOfString += 2
         if didUpdate:
-            for neighbor in cost_D:
-                for interface in cost_D[neighbor]:
-                    send_routes(interface)
+            for neighbor in self.cost_D:
+                for interface in self.cost_D[neighbor]:
+                    self.send_routes(interface)
         
     ## P routing table
     def print_routes(self):
-        print "________________________"
-        print "|" + str(self) + " | H1 | H2 | RA | RB |"
-        print "|-----------------------|"
-        print "|RA | "+str(self.rt_tbl_D["H1"]["RA"])+" | "+str(self.rt_tbl_D["H2"]["RA"])+" | "+str(self.rt_tbl_D["RA"]["RA"])+" | "+str(self.rt_tbl_D["RB"]["RA"])+" |"
-        print "|-----------------------|"
-        print "|RB | "+str(self.rt_tbl_D["H1"]["RB"])+" | "+str(self.rt_tbl_D["H2"]["RB"])+" | "+str(self.rt_tbl_D["RA"]["RB"])+" | "+str(self.rt_tbl_D["RB"]["RB"])+" |"
-        print "------------------------"
+        print "________________________\n" + \
+            "|" + str(self) + " | H1 | H2 | RA | RB |\n" + \
+            "|-----------------------|\n" + \
+            "|RA | "+str(self.rt_tbl_D["H1"]["RA"])+" | "+str(self.rt_tbl_D["H2"]["RA"])+" | "+str(self.rt_tbl_D["RA"]["RA"])+" | "+str(self.rt_tbl_D["RB"]["RA"])+" |\n" + \
+            "|-----------------------|\n" + \
+            "|RB | "+str(self.rt_tbl_D["H1"]["RB"])+" | "+str(self.rt_tbl_D["H2"]["RB"])+" | "+str(self.rt_tbl_D["RA"]["RB"])+" | "+str(self.rt_tbl_D["RB"]["RB"])+" |\n" + \
+            "------------------------\n"
 
     ## thread target for the host to keep forwarding data
     def run(self):
