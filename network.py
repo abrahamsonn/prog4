@@ -200,10 +200,10 @@ class Router:
     def send_routes(self, i):
         # TODO: Send out a routing table update
         #create a routing table update packet
-        for vector in self.rt_tbl_D:
-            update_packet = NetworkPacket(0, 'control', vector) # destination, protocol, data
-            # how is it supposed to know if it changed or not?
-            print "updated row = " + str(update_packet)
+        for router in self.rt_tbl_D:
+            # what the receiving thing needs to update are its destinations, router, and costs
+            string_to_send = str(router).zfill(2) + str(self).zfill(2) + str(self.cost_D[router]).zfill(2)
+            update_packet = NetworkPacket(0, 'control', string_to_send)
             try:
                 print('%s: sending routing update "%s" from interface %d' % (self, update_packet, i))
                 self.intf_L[i].put(update_packet.to_byte_S(), 'out', True) # why encode the table when to_byte_S does it already
@@ -214,7 +214,7 @@ class Router:
 
     ## forward the packet according to the routing table
     #  @param p Packet containing routing information
-    def update_routes(self, p, i):
+    def update_routes(self, updated_packet, i):
         #TODO: add logic to update the routing tables and
         # possibly send out routing updates
         print('%s: Received routing update %s from interface %d' % (self, p, i))
@@ -234,8 +234,8 @@ class Router:
                 for interface in cost_D[neighbor]:
                     send_routes(interface)
         
-    ## Print routing table
-    def print_routes(self):        
+    ## P routing table
+    def print_routes(self):
         print "________________________"
         print "|" + str(self) + " | H1 | H2 | RA | RB |"
         print "|-----------------------|"
