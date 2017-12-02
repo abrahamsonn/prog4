@@ -154,11 +154,10 @@ class Router:
             "RB": {"RA": 99, "RB": 99}}            # {destination: {router: cost}}
         print('%s: Initialized routing table' % self)
         self.print_routes()
+        self.rt_tbl_D[str(self)][str(self)] = 0
         for neighbor in self.cost_D:
             for interface in self.cost_D[neighbor]:
-                for destinationColumn in self.rt_tbl_D:
-                    if neighbor in self.rt_tbl_D[destinationColumn]:
-                        self.rt_tbl_D[destinationColumn][neighbor] = self.cost_D[neighbor][interface]
+                self.rt_tbl_D[neighbor][str(self)] = self.cost_D[neighbor][interface]
         for neighbor in self.cost_D:
             for interface in self.cost_D[neighbor]:
                 self.send_routes(interface)
