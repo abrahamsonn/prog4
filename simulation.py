@@ -53,10 +53,11 @@ if __name__ == '__main__':
     sleep(simulation_time)  #let the tables converge
     print("Converged routing tables")
     for obj in object_L:
-        print "obj type = " + str(type(obj))
-        if obj.type == "router":
-            print "ROUTE:"
-            obj.print_routes()
+        if str(type(obj)) == "<class 'network.Router'>":
+            print "obj type = " + str(type(obj))
+            if obj.type == "router":
+                print "ROUTE:"
+                obj.print_routes()
 
     #send packet from host 1 to host 2
     host_1.udt_send('H2', 'MESSAGE_FROM_H1')

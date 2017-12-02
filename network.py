@@ -5,7 +5,7 @@ import threading
 
 ## wrapper class for a queue of packets
 class Interface:
-    type = "interface"
+    #type = "interface"
 
     ## @param maxsize - the maximum size of the queue storing packets
     def __init__(self, maxsize=0):
@@ -44,7 +44,7 @@ class Interface:
         
 ## Implements a network layer packet.
 class NetworkPacket:
-    type = "networkpacket"
+    #type = "networkpacket"
     ## packet encoding lengths 
     dst_S_length = 5
     prot_S_length = 1
@@ -93,7 +93,7 @@ class NetworkPacket:
 
 ## Implements a network host for receiving and transmitting data
 class Host:
-    type = "host"
+    #type = "host"
     
     ##@param addr: address of this node represented as an integer
     def __init__(self, addr):
@@ -135,7 +135,7 @@ class Host:
 ## Implements a multi-interface router
 class Router:
 
-    type = "router"
+    #type = "router"
 
     ##@param name: friendly router name for debugging
     # @param cost_D: cost table to neighbors {neighbor: {interface: cost}}
@@ -148,7 +148,7 @@ class Router:
         #save neighbors and interfeces on which we connect to them
         self.cost_D = cost_D    # {neighbor: {interface: cost}}
         #TODO: set up the routing table for connected hosts
-        self.rt_tbl_D = {}      # {destination: {router: cost}}
+        self.rt_tbl_D = {}			# {destination: {router: cost}}
         print('%s: Initialized routing table' % self)
         self.print_routes()
 
@@ -197,7 +197,8 @@ class Router:
     def send_routes(self, i):
         # TODO: Send out a routing table update
         #create a routing table update packet
-        p = NetworkPacket(0, 'table_update', self.rt_tbl_D) # destination, protocol, data
+        p = NetworkPacket(0, 'control', 'DUMMY_ROUTING_TABLE')
+        #p = NetworkPacket(0, 'table_update', self.rt_tbl_D) # destination, protocol, data
         try:
             print('%s: sending routing update "%s" from interface %d' % (self, p, i))
             self.intf_L[i].put(p.to_byte_S(), 'out', True) # why encode the table when to_byte_S does it already
@@ -215,18 +216,14 @@ class Router:
 
         
     ## Print routing table
-    def print_routes(self):
-        print "Router name: " + str(self)
-        # this is where i just want a normal for loop. Not any of these shit python for loops.
-        sys.stdout.write("[")
-        for i in range(0, self.rt_tbl_D.__len__(), 1):
-            sys.stdout.write("[")
-            for j in range(0, i.__len__() - 1, 1):
-                sys.stdout.write(self.rt_tbl_D[i][j])
-                sys.stdout.write(", ")
-            sys.stdout.write(self.rt_tbl_D[i][i.__len__() - 1])
-            sys.stdout.write("]\n")
-        sys.stdout.write("]\n")
+    def print_routes(self):		
+        print "________________________"
+        print "|" + str(self) + " | H1 | H2 | RA | RB |"
+        print "|-----------------------|"
+        print "|RA |  "+str(self.rt_tbl_D["H1"]["RA"])+" |  "+str(self.rt_tbl_D["H2"]["RA"])+" |  "+str(self.rt_tbl_D["RA"]["RA"])+" |  "+str(self.rt_tbl_D["RB"]["RA"])+" |"
+        print "|-----------------------|"
+        print "|RB |  "+str(self.rt_tbl_D["H1"]["RB"])+" |  "+str(self.rt_tbl_D["H2"]["RB"])+" |  "+str(self.rt_tbl_D["RA"]["RB"])+" |  "+str(self.rt_tbl_D["RB"]["RB"])+" |"
+        print "------------------------"
 
     ## thread target for the host to keep forwarding data
     def run(self):
