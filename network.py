@@ -151,7 +151,7 @@ class Router:
         self.rt_tbl_D = {"H1": {"RA": 99, "RB": 99},
             "H2": {"RA": 99, "RB": 99},
             "RA": {"RA": 99, "RB": 99},
-            "RB": {"RA": 99, "RB": 99}}			# {destination: {router: cost}}
+            "RB": {"RA": 99, "RB": 99}}            # {destination: {router: cost}}
         print('%s: Initialized routing table' % self)
         self.print_routes()
 
@@ -203,7 +203,7 @@ class Router:
         for vector in self.rt_tbl_D:
             update_packet = NetworkPacket(0, 'control', vector) # destination, protocol, data
             # how is it supposed to know if it changed or not?
-            print "updated row = " + update_packet
+            print "updated row = " + str(update_packet)
             try:
                 print('%s: sending routing update "%s" from interface %d' % (self, update_packet, i))
                 self.intf_L[i].put(update_packet.to_byte_S(), 'out', True) # why encode the table when to_byte_S does it already
@@ -218,10 +218,24 @@ class Router:
         #TODO: add logic to update the routing tables and
         # possibly send out routing updates
         print('%s: Received routing update %s from interface %d' % (self, p, i))
-
+        updateString = p.data_S
+        indexOfString = 0
+        didUpdate = False
+        for destinationColumn in self.rt_tbl_D:
+            for routerRow in self.rt_tbl_D[destinationColumn]:
+                indexOfString += 4
+                existingValue = self.rt_tbl_D[destinationColumn][routerRow]
+                incomingValue = int(updateString[indexOfString:indexOfString+1])
+                if existingValue > incomingValue:
+                    self.rt_tbl_D[destinationColumn][routerRow] = incomingValue
+                    didUpdate = True
+        if didUpdate:
+            for neighbor in cost_D:
+                for interface in cost_D[neighbor]:
+                    send_routes(interface)
         
     ## Print routing table
-    def print_routes(self):		
+    def print_routes(self):        
         print "________________________"
         print "|" + str(self) + " | H1 | H2 | RA | RB |"
         print "|-----------------------|"
