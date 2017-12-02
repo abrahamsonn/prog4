@@ -196,7 +196,8 @@ class Router:
             # get packet info
             dest_addr = p.dst
             interface_out = self.rt_tbl_D[dest_addr]
-            print("\tDEST ADDR = %s\n\tPOSSIBLE COSTS = %s" % (str(dest_addr), str(interface_out)))
+            print("ROUTER NAME %s\n" % str(self.name))
+            print("\tDEST ADDR = %s\n\tPOSSIBLE CONNECTIONS = %s" % (str(dest_addr), str(interface_out)))
             # get lowest cost
             min_value = 99
             for x in interface_out:
