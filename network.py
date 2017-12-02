@@ -202,7 +202,7 @@ class Router:
         #create a routing table update packet
         for router in self.rt_tbl_D:
             # what the receiving thing needs to update are its destinations, router, and costs
-            string_to_send = str(router).zfill(2) + str(self).zfill(2) + str(self.cost_D[router]).zfill(2)
+            string_to_send = str(router).zfill(2) + str(self).zfill(2) + str(self.rt_tbl_D[router]).zfill(2)
             update_packet = NetworkPacket(0, 'control', string_to_send)
             try:
                 print('%s: sending routing update "%s" from interface %d' % (self, update_packet, i))
